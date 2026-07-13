@@ -31,7 +31,7 @@ function ruleBased(insight: Insight): string[] {
     tips.push('Kullanmadığınız cihazları bekleme modunda bırakmayın; prizden çekmek aylık 8–12 kWh (≈4–6 kg CO₂e) tasarruf sağlar.');
   }
   if ('plane_domestic' in subs) {
-    tips.push('Bir sonraki şehirlerarası yolculuk için treni değerlendirin — km başına ucağa göre yaklaşık 6 kat daha az emisyon.');
+    tips.push('Bir sonraki şehirlerarası yolculuk için treni değerlendirin — km başına uçağa göre yaklaşık 6 kat daha az emisyon.');
   }
   if (weekTotal === 0) {
     tips.length = 0;

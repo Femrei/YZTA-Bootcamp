@@ -5,7 +5,6 @@ import { TRANSPORT_FACTORS, type TransportKey } from '../lib/emissionFactors'
 import { analyze } from '../lib/insight'
 import { generateTips } from '../lib/coach'
 
-
 type Mode = 'transport' | 'electricity'
 
 export default function AddEntry() {

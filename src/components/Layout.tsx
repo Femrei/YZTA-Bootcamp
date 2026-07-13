@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Panel', icon: '◐' },
@@ -22,7 +21,6 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, signOut } = useAuth()
   const location = useLocation()
   const page = PAGE_TITLES[location.pathname] || { title: 'CarbOn', subtitle: '' }
 
@@ -50,8 +48,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           ))}
         </ul>
         <div className="sidebar-footer">
-          <div className="user-email">{user?.email}</div>
-          <button className="logout-btn" onClick={() => signOut()}>Çıkış yap</button>
+          <div style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', fontWeight: 600 }}>
+            CarbOn · YZTA Bootcamp 2026
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--ink-muted)', marginTop: 4 }}>
+            Takım 17
+          </div>
         </div>
       </aside>
 

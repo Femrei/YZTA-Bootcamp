@@ -1,14 +1,28 @@
-import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { DEFAULT_DAILY_BUDGET_KG } from '../lib/emissionFactors'
 
 export default function Settings() {
-  const { profile, refreshProfile, user, signOut } = useAuth()
-  const [budget, setBudget] = useState(String(profile?.daily_budget_kg || DEFAULT_DAILY_BUDGET_KG))
+  const [budget, setBudget] = useState(String(DEFAULT_DAILY_BUDGET_KG))
+  const [profileId, setProfileId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function loadProfile() {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .limit(1)
+        .maybeSingle()
+      if (data) {
+        setProfileId(data.id)
+        setBudget(String(data.daily_budget_kg))
+      }
+    }
+    loadProfile()
+  }, [])
 
   async function handleSaveBudget(e: React.FormEvent) {
     e.preventDefault()
@@ -22,12 +36,21 @@ export default function Settings() {
       return
     }
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ daily_budget_kg: n })
-        .eq('id', user!.id)
-      if (error) throw error
-      await refreshProfile()
+      if (profileId) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ daily_budget_kg: n })
+          .eq('id', profileId)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase
+          .from('profiles')
+          .insert({ daily_budget_kg: n })
+          .select()
+          .single()
+        if (error) throw error
+        setProfileId(data.id)
+      }
       setSaved(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kaydedilemedi')
@@ -68,32 +91,9 @@ export default function Settings() {
       </div>
 
       <div className="card">
-        <h3>Profil <span className="card-sub">Hesap bilgileri</span></h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: '0.9rem' }}>
-          <div>
-            <span style={{ color: 'var(--ink-soft)', fontWeight: 600 }}>E-posta: </span>
-            <span>{user?.email}</span>
-          </div>
-          <div>
-            <span style={{ color: 'var(--ink-soft)', fontWeight: 600 }}>Hesap tarihi: </span>
-            <span>{profile?.created_at ? new Date(profile.created_at).toLocaleDateString('tr-TR') : '–'}</span>
-          </div>
-        </div>
-        <button
-          className="btn-secondary"
-          style={{ marginTop: 20, color: 'var(--clay)', borderColor: 'var(--error-400)' }}
-          onClick={() => signOut()}
-        >
-          Çıkış yap
-        </button>
-      </div>
-
-      <div className="card">
         <h3>Veri & Gizlilik</h3>
         <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-          Tüm karbon verileriniz Supabase üzerinde güvenli şekilde saklanır ve sadece
-          kendi hesabınızdan erişilebilir. Hesabınızı silerseniz tüm verileriniz
-          otomatik olarak kaldırılır.
+          Tüm karbon verileriniz Supabase üzerinde güvenli şekilde saklanır.
         </p>
         <p style={{ fontSize: '0.78rem', color: 'var(--ink-muted)', marginTop: 12 }}>
           CarbOn · YZTA Bootcamp 2026 — Takım 17 · Elektrik katsayısı: 0.478 kg CO₂e/kWh (ETKB/EVÇED)
