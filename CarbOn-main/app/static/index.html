@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarbOn — Karbon Ayak İzi Koçu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --paper:#F1F5EC; --card:#FFFFFF; --ink:#13251B; --ink-soft:#4A5C50;
+  --leaf:#2E7D4F; --leaf-deep:#1C5A38; --amber:#E39A2D; --clay:#C4573A;
+  --ring-track:#DCE7D8; --line:#E3EADF; --radius:18px;
+  --shadow:0 1px 2px rgba(19,37,27,.05),0 8px 24px rgba(19,37,27,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Manrope',system-ui,sans-serif;background:var(--paper);color:var(--ink);
+  background-image:radial-gradient(circle at 85% -10%,rgba(46,125,79,.08),transparent 45%);
+  min-height:100vh;line-height:1.55}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:650;letter-spacing:-.01em}
+.wrap{max-width:1140px;margin:0 auto;padding:24px 20px 64px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 0 26px;flex-wrap:wrap}
+.logo{display:flex;align-items:baseline;gap:10px}
+.logo h1{font-size:1.9rem}
+.logo .leafdot{color:var(--leaf)}
+.logo small{color:var(--ink-soft);font-size:.8rem;font-weight:600}
+.userbox{display:flex;gap:8px;align-items:center}
+.userbox input{border:1.5px solid var(--line);background:var(--card);border-radius:12px;
+  padding:9px 12px;font:inherit;width:170px}
+.userbox input:focus{outline:2px solid var(--leaf);outline-offset:1px;border-color:transparent}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:22px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.card h2{font-size:1.15rem;margin-bottom:14px}
+.card h2 .sub{display:block;font-family:'Manrope';font-size:.78rem;font-weight:600;color:var(--ink-soft);letter-spacing:.02em;margin-top:2px}
+.stack{display:flex;flex-direction:column;gap:22px}
+
+/* ---- signature: budget ring ---- */
+.ringwrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 2px}
+.ring{position:relative;width:210px;height:210px}
+.ring svg{transform:rotate(-90deg)}
+.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ring .kg{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:650;line-height:1}
+.ring .lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase;margin-top:6px}
+.budgetline{font-size:.85rem;color:var(--ink-soft);text-align:center}
+.budgetline b{color:var(--ink)}
+.budgetline button{background:none;border:none;color:var(--leaf);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+.streak{display:inline-flex;align-items:center;gap:6px;background:#FBF3E3;color:#8A5E12;
+  border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:700}
+
+/* ---- form ---- */
+.seg{display:flex;background:var(--paper);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px}
+.seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px 0;font:inherit;font-weight:700;color:var(--ink-soft);cursor:pointer}
+.seg button.on{background:var(--card);color:var(--leaf-deep);box-shadow:var(--shadow)}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--ink-soft);margin:12px 0 5px}
+select,input[type=number],input[type=date]{width:100%;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 12px;font:inherit;background:var(--card)}
+select:focus,input:focus{outline:2px solid var(--leaf);outline-offset:1px;border-color:transparent}
+.btn{width:100%;margin-top:16px;border:none;border-radius:12px;padding:13px;font:inherit;font-weight:700;
+  background:var(--leaf);color:#fff;cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--leaf-deep)}
+.btn:disabled{opacity:.6;cursor:wait}
+.result{margin-top:12px;font-size:.88rem;background:#EDF6EF;border:1px solid #CFE6D6;border-radius:12px;padding:11px 13px;display:none}
+.result.err{background:#FBEEE9;border-color:#EDCBBE;color:var(--clay)}
+
+/* ---- insight ---- */
+.summary{font-size:1rem;background:linear-gradient(135deg,#F3F8F0,#EDF4F6);border-radius:14px;padding:16px 18px;border:1px solid var(--line)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:14px}
+.metric{background:var(--paper);border-radius:12px;padding:12px 14px}
+.metric .v{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:650}
+.metric .k{font-size:.72rem;font-weight:700;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{background:var(--paper);border-radius:999px;padding:6px 13px;font-size:.8rem;font-weight:600;color:var(--ink-soft)}
+.chip b{color:var(--ink)}
+canvas{max-height:260px}
+
+/* ---- tasks ---- */
+.task{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:none}
+.task input{margin-top:4px;accent-color:var(--leaf);width:17px;height:17px;cursor:pointer}
+.task.done span{text-decoration:line-through;color:var(--ink-soft)}
+.task span{font-size:.92rem}
+.provider{font-size:.72rem;color:var(--ink-soft);margin-top:8px}
+.mini{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:7px 13px;font:inherit;font-size:.82rem;font-weight:700;color:var(--leaf-deep);cursor:pointer}
+.mini:hover{border-color:var(--leaf)}
+.rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+
+/* ---- table ---- */
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);padding:8px 6px;border-bottom:1.5px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--line)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.del{background:none;border:none;color:var(--clay);cursor:pointer;font-size:1rem}
+.empty{color:var(--ink-soft);font-size:.88rem;padding:14px 0}
+.exports{display:flex;gap:8px}
+footer{margin-top:36px;text-align:center;font-size:.78rem;color:var(--ink-soft)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <h1><span class="leafdot">●</span> CarbOn</h1>
+      <small>çok ajanlı karbon ayak izi koçu</small>
+    </div>
+    <div class="userbox">
+      <label for="user" style="margin:0">Kullanıcı</label>
+      <input id="user" placeholder="adınız" autocomplete="off">
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- SOL SÜTUN -->
+    <div class="stack">
+      <div class="card">
+        <div class="ringwrap">
+          <div class="ring">
+            <svg width="210" height="210" viewBox="0 0 210 210" aria-label="Günlük karbon bütçesi">
+              <circle cx="105" cy="105" r="92" fill="none" stroke="var(--ring-track)" stroke-width="16"/>
+              <circle id="ringOuter" cx="105" cy="105" r="92" fill="none" stroke="var(--leaf)" stroke-width="16"
+                      stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578"/>
+              <circle cx="105" cy="105" r="70" fill="none" stroke="var(--ring-track)" stroke-width="8" opacity=".6"/>
+              <circle id="ringInner" cx="105" cy="105" r="70" fill="none" stroke="var(--amber)" stroke-width="8"
+                      stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="440" opacity=".9"/>
+            </svg>
+            <div class="center">
+              <div class="kg" id="todayKg">0</div>
+              <div class="lbl">kg CO₂e · bugün</div>
+            </div>
+          </div>
+          <div class="budgetline">
+            Günlük bütçe: <b id="budgetVal">15</b> kg
+            <button id="editBudget">değiştir</button><br>
+            <span id="turkeyCmp"></span>
+          </div>
+          <div class="streak" id="streak" hidden>🔥 <span></span> günlük seri</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Veri Girişi <span class="sub">Takip Ajanı hesaplar, koç yorumlar</span></h2>
+        <div class="seg" role="tablist">
+          <button id="segT" class="on">🚌 Ulaşım</button>
+          <button id="segE">⚡ Elektrik</button>
+        </div>
+        <div id="formT">
+          <label for="vehicle">Araç tipi</label>
+          <select id="vehicle"></select>
+          <label for="km">Mesafe (km)</label>
+          <input id="km" type="number" min="0.1" step="0.1" placeholder="örn. 12.5">
+        </div>
+        <div id="formE" hidden>
+          <label for="kwh">Tüketim (kWh)</label>
+          <input id="kwh" type="number" min="0.1" step="0.1" placeholder="faturadaki kWh değeri">
+        </div>
+        <label for="edate">Tarih</label>
+        <input id="edate" type="date">
+        <button class="btn" id="submit">Hesapla ve kaydet</button>
+        <div class="result" id="result"></div>
+      </div>
+    </div>
+
+    <!-- SAĞ SÜTUN -->
+    <div class="stack">
+      <div class="card">
+        <h2>İçgörü <span class="sub">İçgörü Ajanı'nın haftalık analizi</span></h2>
+        <div class="summary" id="summary">Verileriniz yükleniyor…</div>
+        <div class="metrics">
+          <div class="metric"><div class="v" id="mWeek">–</div><div class="k">bu hafta (kg)</div></div>
+          <div class="metric"><div class="v" id="mAvg">–</div><div class="k">günlük ort. (kg)</div></div>
+          <div class="metric"><div class="v" id="mChange">–</div><div class="k">haftalık değişim</div></div>
+          <div class="metric"><div class="v" id="mMonth">–</div><div class="k">son 30 gün (kg)</div></div>
+        </div>
+        <div class="chips" id="equivChips"></div>
+      </div>
+
+      <div class="card">
+        <h2>30 Günlük Trend</h2>
+        <canvas id="trendChart" height="120"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="rowhead">
+          <h2 style="margin:0">Bugünün Yeşil Görevleri <span class="sub">Koç Ajanı'ndan</span></h2>
+          <button class="mini" id="refreshCoach">Yenile</button>
+        </div>
+        <div id="tasks"><div class="empty">Veri girdiğinizde koçunuz size özel görevler hazırlar.</div></div>
+        <div class="provider" id="provider"></div>
+      </div>
+
+      <div class="card">
+        <div class="rowhead">
+          <h2 style="margin:0">Son Kayıtlar</h2>
+          <div class="exports">
+            <button class="mini" id="expCsv">CSV indir</button>
+            <button class="mini" id="expJson">JSON</button>
+          </div>
+        </div>
+        <div id="entriesWrap"><div class="empty">Henüz kayıt yok.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>CarbOn · YZTA Bootcamp 2026 — Takım 17 · Elektrik katsayısı: 0.478 kg CO₂e/kWh (ETKB/EVÇED)</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const api = (p, opt) => fetch(p, opt).then(async r => {
+  if (!r.ok) { const e = await r.json().catch(()=>({detail:r.statusText})); throw new Error(e.detail || 'Hata'); }
+  return r.json();
+});
+let username = localStorage.getItem('carbon_user') || 'misafir';
+let chart = null, dailyBudget = 15;
+
+$('user').value = username;
+$('edate').value = new Date().toISOString().slice(0,10);
+$('user').addEventListener('change', () => {
+  username = $('user').value.trim() || 'misafir';
+  localStorage.setItem('carbon_user', username);
+  loadDashboard();
+});
+
+/* segment değişimi */
+let mode = 'transport';
+$('segT').onclick = () => { mode='transport'; $('segT').classList.add('on'); $('segE').classList.remove('on'); $('formT').hidden=false; $('formE').hidden=true; };
+$('segE').onclick = () => { mode='electricity'; $('segE').classList.add('on'); $('segT').classList.remove('on'); $('formE').hidden=false; $('formT').hidden=true; };
+
+/* araç tiplerini yükle */
+api('/api/factors').then(f => {
+  $('vehicle').innerHTML = Object.entries(f.transport)
+    .map(([k,v]) => `<option value="${k}">${v.label} — ${v.kg_per_km} kg/km</option>`).join('');
+});
+
+/* veri girişi → orkestratör pipeline */
+$('submit').onclick = async () => {
+  const btn = $('submit'), res = $('result');
+  const amount = mode==='transport' ? parseFloat($('km').value) : parseFloat($('kwh').value);
+  btn.disabled = true; res.style.display='none';
+  try {
+    const out = await api('/api/entries', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        user: username, category: mode,
+        subtype: mode==='transport' ? $('vehicle').value : 'grid',
+        amount, entry_date: $('edate').value || null
+      })
+    });
+    res.className='result';
+    res.innerHTML = `✅ <b>${out.entry.co2_kg} kg CO₂e</b> eklendi (${out.entry.label}, ${out.entry.amount} ${out.entry.unit}). Koçunuz önerilerini güncelledi.`;
+    res.style.display='block';
+    $('km').value=''; $('kwh').value='';
+    renderAll(out.insight, out.coach);
+    loadEntries();
+  } catch(e) {
+    res.className='result err'; res.textContent='⚠️ ' + e.message; res.style.display='block';
+  } finally { btn.disabled=false; }
+};
+
+/* koç yenile */
+$('refreshCoach').onclick = async () => {
+  $('provider').textContent = 'Koç düşünüyor…';
+  try {
+    const out = await api(`/api/coach/refresh?user=${encodeURIComponent(username)}`, {method:'POST'});
+    renderAll(out.insight, out.coach);
+  } catch(e){ $('provider').textContent = e.message; }
+};
+
+/* bütçe */
+$('editBudget').onclick = async () => {
+  const v = prompt('Günlük karbon bütçeniz (kg CO₂e):', dailyBudget);
+  if (!v) return;
+  const n = parseFloat(v);
+  if (!(n > 0)) return alert('Pozitif bir sayı girin.');
+  await api('/api/budget', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({user: username, daily_budget_kg: n})});
+  loadDashboard();
+};
+
+/* dışa aktarma */
+$('expCsv').onclick = () => window.open(`/api/export?user=${encodeURIComponent(username)}&fmt=csv`);
+$('expJson').onclick = () => window.open(`/api/export?user=${encodeURIComponent(username)}&fmt=json`);
+
+/* ---- render ---- */
+function renderRing(todayKg, budget, weekAvg) {
+  $('todayKg').textContent = todayKg.toFixed(1);
+  $('budgetVal').textContent = budget;
+  const outer = Math.min(todayKg / budget, 1);
+  const inner = Math.min(weekAvg / budget, 1);
+  $('ringOuter').style.strokeDashoffset = 578 * (1 - outer);
+  $('ringOuter').style.stroke = todayKg > budget ? 'var(--clay)' : 'var(--leaf)';
+  $('ringInner').style.strokeDashoffset = 440 * (1 - inner);
+}
+
+function renderInsight(ins) {
+  $('summary').textContent = ins.summary;
+  $('mWeek').textContent = ins.week_total_kg;
+  $('mAvg').textContent = ins.daily_avg_kg;
+  $('mChange').textContent = ins.week_change_pct == null ? '–' :
+      (ins.week_change_pct > 0 ? '+' : '') + ins.week_change_pct + '%';
+  $('mChange').style.color = ins.week_change_pct > 0 ? 'var(--clay)' : 'var(--leaf-deep)';
+  $('mMonth').textContent = ins.month_total_kg;
+  $('turkeyCmp').textContent = ins.daily_avg_kg > 0
+    ? `Türkiye ortalamasının %${ins.vs_turkey_pct}'i seviyesindesiniz`
+    : '';
+  const eq = ins.equivalents || {};
+  $('equivChips').innerHTML = ins.week_total_kg > 0 ? `
+    <div class="chip">🌳 <b>${eq.trees_year}</b> ağacın yıllık emdiği CO₂</div>
+    <div class="chip">🚗 <b>${eq.car_km}</b> km araba yolculuğu</div>
+    <div class="chip">☕ <b>${eq.coffee_cups}</b> fincan kahve</div>` : '';
+  if (ins.streak_days > 0) {
+    $('streak').hidden = false;
+    $('streak').querySelector('span').textContent = ins.streak_days;
+  } else $('streak').hidden = true;
+
+  renderRing(ins.today_total_kg || 0, dailyBudget, ins.daily_avg_kg || 0);
+  renderChart(ins.trend || []);
+}
+
+function renderChart(trend) {
+  const ctx = $('trendChart');
+  const labels = trend.map(t => t.date.slice(5));
+  const data = {
+    labels,
+    datasets: [
+      {label:'Ulaşım', data:trend.map(t=>t.transport), backgroundColor:'#2E7D4F', stack:'a', borderRadius:4},
+      {label:'Elektrik', data:trend.map(t=>t.electricity), backgroundColor:'#E39A2D', stack:'a', borderRadius:4},
+    ]
+  };
+  if (chart) { chart.data = data; chart.update(); return; }
+  chart = new Chart(ctx, {type:'bar', data, options:{
+    responsive:true, plugins:{legend:{position:'bottom', labels:{boxWidth:12, font:{family:'Manrope'}}}},
+    scales:{x:{stacked:true, grid:{display:false}}, y:{stacked:true, title:{display:true, text:'kg CO₂e'}}}
+  }});
+}
+
+function renderTasks(tasks, provider) {
+  const box = $('tasks');
+  if (!tasks || !tasks.length) {
+    box.innerHTML = '<div class="empty">Veri girdiğinizde koçunuz size özel görevler hazırlar.</div>';
+    $('provider').textContent=''; return;
+  }
+  box.innerHTML = tasks.map(t => `
+    <div class="task ${t.done?'done':''}">
+      <input type="checkbox" ${t.done?'checked disabled':''} data-id="${t.id}" aria-label="Görevi tamamla">
+      <span>${t.text}</span>
+    </div>`).join('');
+  box.querySelectorAll('input:not(:disabled)').forEach(cb => cb.onchange = async () => {
+    const out = await api('/api/tasks/complete', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user: username, task_id: +cb.dataset.id})});
+    cb.disabled = true; cb.closest('.task').classList.add('done');
+    if (out.streak_days > 0){ $('streak').hidden=false; $('streak').querySelector('span').textContent = out.streak_days; }
+  });
+  if (provider) $('provider').textContent = 'Öneri kaynağı: ' +
+    ({gemini:'Gemini', openai:'OpenAI', rule_based:'yerleşik koç (LLM anahtarı tanımlı değil)'}[provider] || provider);
+}
+
+function renderAll(ins, coach) {
+  if (ins) renderInsight(ins);
+  if (coach && coach.tips) renderTasks(coach.tips, coach.provider);
+}
+
+async function loadEntries() {
+  const rows = await api(`/api/entries?user=${encodeURIComponent(username)}&limit=10`);
+  const wrap = $('entriesWrap');
+  if (!rows.length) { wrap.innerHTML = '<div class="empty">Henüz kayıt yok.</div>'; return; }
+  wrap.innerHTML = `<table><thead><tr><th>Tarih</th><th>Tür</th><th class="num">Miktar</th><th class="num">kg CO₂e</th><th></th></tr></thead>
+    <tbody>${rows.map(r => `<tr>
+      <td>${r.entry_date}</td>
+      <td>${r.category==='transport' ? '🚌' : '⚡'} ${r.subtype==='grid'?'Elektrik':r.subtype}</td>
+      <td class="num">${r.amount} ${r.unit}</td>
+      <td class="num"><b>${r.co2_kg}</b></td>
+      <td><button class="del" data-id="${r.id}" title="Sil" aria-label="Kaydı sil">✕</button></td>
+    </tr>`).join('')}</tbody></table>`;
+  wrap.querySelectorAll('.del').forEach(b => b.onclick = async () => {
+    await api(`/api/entries/${b.dataset.id}?user=${encodeURIComponent(username)}`, {method:'DELETE'});
+    loadDashboard();
+  });
+}
+
+async function loadDashboard() {
+  try {
+    const d = await api(`/api/dashboard?user=${encodeURIComponent(username)}`);
+    dailyBudget = d.user.daily_budget_kg;
+    renderInsight(d.insight);
+    renderTasks(d.tasks);
+    loadEntries();
+  } catch(e) { $('summary').textContent = 'Sunucuya ulaşılamadı: ' + e.message; }
+}
+loadDashboard();
+</script>
+</body>
+</html>
