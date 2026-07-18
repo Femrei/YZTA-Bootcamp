@@ -68,7 +68,7 @@ export async function streakDays(): Promise<number> {
 
   let streak = 0;
   const cursor = new Date(today);
-  while (cursor.toISOString().slice(0, 10) in days) {
+  while (days.has(cursor.toISOString().slice(0, 10))) {
     streak++;
     cursor.setDate(cursor.getDate() - 1);
   }
