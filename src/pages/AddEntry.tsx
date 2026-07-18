@@ -18,6 +18,9 @@ export default function AddEntry() {
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
   const vehicleKeys = Object.keys(TRANSPORT_FACTORS) as TransportKey[]
+  const previewKg = mode === 'transport'
+    ? (parseFloat(km) || 0) * TRANSPORT_FACTORS[vehicle].kg_per_km
+    : (parseFloat(kwh) || 0) * 0.478
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -35,7 +38,6 @@ export default function AddEntry() {
         entry = await trackElectricity(kwhNum, date)
       }
 
-      // Run insight + coach pipeline
       const insight = await analyze()
       await generateTips(insight)
 
@@ -54,9 +56,14 @@ export default function AddEntry() {
   }
 
   return (
-    <div className="stack" style={{ maxWidth: 560 }}>
+    <div className="stack" style={{ maxWidth: 580 }}>
       <div className="card">
-        <h3>Veri Girişi <span className="card-sub">Takip Ajanı hesaplar, koç yorumlar</span></h3>
+        <div className="card-head">
+          <div>
+            <h3>Veri Girişi</h3>
+            <span className="card-sub">Takip Ajanı hesaplar, koç yorumlar</span>
+          </div>
+        </div>
 
         <div className="segment">
           <button
@@ -127,6 +134,19 @@ export default function AddEntry() {
             onChange={(e) => setDate(e.target.value)}
             required
           />
+
+          {previewKg > 0 && (
+            <div style={{
+              marginTop: 16, padding: '12px 16px',
+              background: 'var(--card-soft)', border: '1px solid var(--line-soft)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '.88rem', color: 'var(--ink-soft)',
+            }}>
+              Tahmini emisyon: <b style={{ color: 'var(--leaf-deep)', fontFamily: 'Fraunces, serif', fontSize: '1.1rem' }}>
+                {(Math.round(previewKg * 100) / 100)} kg CO₂e
+              </b>
+            </div>
+          )}
 
           <button
             className="btn-primary"

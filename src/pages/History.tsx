@@ -71,11 +71,14 @@ export default function History() {
   return (
     <div className="stack">
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <h3 style={{ margin: 0 }}>Tüm Kayıtlar</h3>
+        <div className="card-head" style={{ flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h3>Tüm Kayıtlar</h3>
+            <span className="card-sub">{entries.length} kayıt</span>
+          </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-secondary" onClick={() => handleExport('csv')}>CSV indir</button>
-            <button className="btn-secondary" onClick={() => handleExport('json')}>JSON</button>
+            <button className="btn-secondary" onClick={() => handleExport('csv')}>⬇ CSV indir</button>
+            <button className="btn-secondary" onClick={() => handleExport('json')}>⬇ JSON</button>
           </div>
         </div>
 
@@ -98,7 +101,11 @@ export default function History() {
                 {entries.map((r) => (
                   <tr key={r.id}>
                     <td>{r.entry_date}</td>
-                    <td>{r.category === 'transport' ? '🚌 Ulaşım' : '⚡ Elektrik'}</td>
+                    <td>
+                      <span className={`pill ${r.category === 'transport' ? '' : 'amber'}`}>
+                        {r.category === 'transport' ? '🚌 Ulaşım' : '⚡ Elektrik'}
+                      </span>
+                    </td>
                     <td>{r.subtype === 'grid' ? 'Şebeke' :
                       r.subtype in TRANSPORT_FACTORS ? TRANSPORT_FACTORS[r.subtype as keyof typeof TRANSPORT_FACTORS].label : r.subtype}</td>
                     <td className="num">{r.amount} {r.unit}</td>

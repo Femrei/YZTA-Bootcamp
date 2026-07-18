@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import AddEntry from './pages/AddEntry'
@@ -9,9 +8,6 @@ import History from './pages/History'
 import Settings from './pages/Settings'
 
 export default function App() {
-  const { loading } = useAuth()
-  if (loading) return <div className="loading-spinner">Yükleniyor…</div>
-
   return (
     <Layout>
       <Routes>

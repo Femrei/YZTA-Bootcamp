@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { analyze } from '../lib/insight'
+import { analyze, streakDays } from '../lib/insight'
 import { generateTips, fetchTasksForDay, completeTask } from '../lib/coach'
-import { streakDays } from '../lib/insight'
 import type { Insight, Task } from '../types'
 
 export default function Coach() {
@@ -70,21 +69,24 @@ export default function Coach() {
   }
 
   return (
-    <div className="stack" style={{ maxWidth: 640 }}>
+    <div className="stack" style={{ maxWidth: 680 }}>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h3 style={{ margin: 0 }}>Bugünün Yeşil Görevleri <span className="card-sub">Koç Ajanı'ndan</span></h3>
+        <div className="card-head">
+          <div>
+            <h3>Bugünün Yeşil Görevleri</h3>
+            <span className="card-sub">Koç Ajanı'ndan</span>
+          </div>
           <button
             className="btn-secondary"
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            {refreshing ? 'Düşünüyor…' : 'Yenile'}
+            {refreshing ? 'Düşünüyor…' : '↻ Yenile'}
           </button>
         </div>
 
         {streak > 0 && (
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 14 }}>
             <span className="streak-badge">🔥 {streak} günlük seri</span>
           </div>
         )}
@@ -114,6 +116,7 @@ export default function Coach() {
 
         {provider && (
           <div className="provider-note">
+            <span className="dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--leaf)' }} />
             Öneri kaynağı: {providerLabel[provider] || provider}
           </div>
         )}
@@ -121,16 +124,21 @@ export default function Coach() {
 
       {insight && insight.week_total_kg > 0 && (
         <div className="card">
-          <h3>Bu Haftaki Durum</h3>
-          <div className="summary-box" style={{ fontSize: '0.92rem' }}>{insight.summary}</div>
+          <div className="card-head">
+            <div>
+              <h3>Bu Haftaki Durum</h3>
+              <span className="card-sub">Koç önerileri bu veriye göre üretildi</span>
+            </div>
+          </div>
+          <div className="summary-box" style={{ fontSize: '.92rem' }}>{insight.summary}</div>
           <div className="metrics-grid">
             <div className="metric">
               <div className="v">{insight.week_total_kg}</div>
-              <div className="k">bu hafta (kg)</div>
+              <div className="k">bu hafta · kg</div>
             </div>
             <div className="metric">
               <div className="v">{insight.daily_avg_kg}</div>
-              <div className="k">günlük ort. (kg)</div>
+              <div className="k">günlük ort. · kg</div>
             </div>
           </div>
         </div>
